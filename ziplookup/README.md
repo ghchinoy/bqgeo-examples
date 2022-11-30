@@ -3,8 +3,6 @@
 
 An API that queries BigQuery public datasets for the zipcodes within a given city and state.
 
-[![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run?dir=ziplookup)
-
 
 Deploy this then call it via URL pattern `/ziplookup/STATE/CITY` ex. `/ziplookup/CA/Mountain%20View`
 
@@ -27,6 +25,7 @@ And receive JSON such as
 ]
 ```
 
+
 The BigQuery query used is:
 
 
@@ -39,3 +38,41 @@ WHERE
 ORDER BY zip_code
 LIMIT 30
 ```
+
+
+## Deploy as Cloud Run service
+
+Deploying to Cloud Run with the Google Cloud SDK by typing `gcloud run deploy ziplookup --source .`.
+
+Use service account to run the service vs the default account:
+
+### Create a Service Account to use for Cloud Run
+
+```
+export PROJECT_ID=$(gcloud info --format='value(config.project)')
+export SERVICE_ACCOUNT=ziplookup-sa@${PROJECT_ID}.iam.gserviceaccount.com
+gcloud iam service-accounts create ziplookup-sa \
+  --display-name "Ziplookup Cloud Run"
+gcloud projects add-iam-policy-binding ${PROJECT_ID} --member \
+  serviceAccount:${SERVICE_ACCOUNT} \
+  --role=roles/bigquery.jobUser
+```
+
+### Clone this repo
+
+```
+git clone https://github.com/ghchinoy/bqgeo-examples.git
+cd ziplookup
+```
+
+### Deploy with service account
+
+```
+gcloud run deploy ziplookup --source . \
+  --region us-central1 --service-account ${SERVICE_ACCOUNT}
+```
+
+
+
+
+
