@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/bigquery"
+	"cloud.google.com/go/compute/metadata"
 	"github.com/gorilla/mux"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -30,7 +31,7 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	projectID = os.Getenv("PROJECT_ID")
+	projectID = getProjectID()
 	if projectID == "" {
 		log.Printf("requires PROJECT_ID")
 		os.Exit(1)
@@ -99,4 +100,13 @@ func cityStateQuery(ctx context.Context, city, state string) ([]ZipCode, error) 
 	}
 
 	return zipcodes, nil
+}
+
+func getProjectID() string {
+	c := metadata.NewClient(&http.Client{})
+	p, err := c.ProjectID()
+	if err != nil {
+		return os.Getenv("PROJECT_ID")
+	}
+	return p
 }
